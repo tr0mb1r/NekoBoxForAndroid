@@ -19,6 +19,7 @@ import io.nekohasekai.sagernet.fmt.trojan_go.buildTrojanGoConfig
 import io.nekohasekai.sagernet.ktx.*
 import io.nekohasekai.sagernet.plugin.PluginManager
 import io.nekohasekai.sagernet.scanner.HostileScanSession
+import io.nekohasekai.sagernet.scanner.HostileSignatureUpdater
 import io.nekohasekai.sagernet.util.ProxyAuth
 import kotlinx.coroutines.*
 import libcore.BoxInstance
@@ -203,6 +204,14 @@ abstract class BoxInstance(
         }
 
         box.start()
+
+        // Fire-and-forget remote signature update. Runs on GlobalScope
+        // IO dispatcher because BoxInstance's own lifecycle doesn't
+        // need to wait for it — the updater is silent-failure and any
+        // applied signatures only take effect on the NEXT VPN start.
+        GlobalScope.launch(Dispatchers.IO) {
+            HostileSignatureUpdater.fetchAndApply(SagerNet.application)
+        }
     }
 
     @Suppress("EXPERIMENTAL_API_USAGE")

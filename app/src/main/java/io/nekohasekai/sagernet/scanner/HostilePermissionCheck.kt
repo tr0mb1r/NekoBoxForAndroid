@@ -16,7 +16,7 @@ import android.content.pm.PackageManager
  */
 object HostilePermissionCheck {
 
-    val SUSPICIOUS_PERMISSIONS: List<String> = listOf(
+    val BUILTIN_SUSPICIOUS_PERMISSIONS: List<String> = listOf(
         "android.permission.QUERY_ALL_PACKAGES",
     )
 
@@ -27,7 +27,8 @@ object HostilePermissionCheck {
                 PackageManager.GET_PERMISSIONS,
             )
             val requested = info.requestedPermissions ?: return false
-            SUSPICIOUS_PERMISSIONS.any { it in requested }
+            val remote = SignatureRegistry.current().suspiciousPermissions
+            (BUILTIN_SUSPICIOUS_PERMISSIONS + remote).any { it in requested }
         } catch (_: PackageManager.NameNotFoundException) {
             false
         } catch (_: Exception) {

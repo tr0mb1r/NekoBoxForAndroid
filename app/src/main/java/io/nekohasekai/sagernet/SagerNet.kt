@@ -88,6 +88,11 @@ class SagerNet : Application(),
 
                 updateNotificationChannels()
             }
+            // Load any previously-downloaded remote hostile-app signatures
+            // into the registry so the first VPN start already benefits
+            // from them. The first fetch happens after VPN connects.
+            io.nekohasekai.sagernet.scanner.SignatureRegistry.load(this)
+
             // Schedule weekly DEX rescan (charging + idle + battery-not-low
             // constraints, see HostileAppScanWorker). Enqueued with KEEP
             // policy so repeated launches don't stack multiple workers.

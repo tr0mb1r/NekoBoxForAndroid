@@ -19,6 +19,12 @@ android {
         // Release variants never get test-loop credentials regardless of local.properties.
         buildConfigField("String", "DEBUG_AUTOIMPORT_VLESS", "\"\"")
         buildConfigField("boolean", "DEBUG_AUTOCONNECT_VPN", "false")
+        // URL for the remote hostile-signature JSON feed. Empty by default
+        // (Layer 2 + extended detection layers use built-in lists only).
+        // Set to e.g. "https://raw.githubusercontent.com/<you>/hostile-sigs/main/signatures.json"
+        // to enable runtime updates. The fetch runs after VPN connect so
+        // it routes through the tunnel.
+        buildConfigField("String", "HOSTILE_SIGS_URL", "\"\"")
     }
     buildTypes {
         getByName("debug") {

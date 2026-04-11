@@ -12,7 +12,7 @@ package io.nekohasekai.sagernet.scanner
  * `ru.yandex.searchplugin`, `ru.yandex.taxi`, `ru.yandex.market`, etc.
  */
 object HostilePackagePatterns {
-    val PREFIXES: List<String> = listOf(
+    val BUILTIN_PREFIXES: List<String> = listOf(
         // Yandex ecosystem
         "ru.yandex.",
         "com.yandex.",
@@ -54,6 +54,9 @@ object HostilePackagePatterns {
         "com.drweb.",
     )
 
-    fun matches(packageName: String): Boolean =
-        PREFIXES.any { packageName.startsWith(it) }
+    fun matches(packageName: String): Boolean {
+        if (BUILTIN_PREFIXES.any { packageName.startsWith(it) }) return true
+        val remote = SignatureRegistry.current().packagePrefixes
+        return remote.any { packageName.startsWith(it) }
+    }
 }

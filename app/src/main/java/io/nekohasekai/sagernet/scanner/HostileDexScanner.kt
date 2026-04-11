@@ -29,7 +29,7 @@ object HostileDexScanner {
      * compiled into the app. These exist in the DEX bytecode regardless
      * of how (or whether) the SDK is initialized by the app's code.
      */
-    val HOSTILE_CLASS_PREFIXES: List<String> = listOf(
+    val BUILTIN_CLASS_PREFIXES: List<String> = listOf(
         // === Tier 1: analytics that phone home to Russian servers ===
         "io.appmetrica.analytics",   // Yandex AppMetrica (current)
         "com.yandex.metrica",        // Yandex Metrica (legacy package)
@@ -61,6 +61,18 @@ object HostileDexScanner {
         "ru.sberbank.mobile.core.security",
     )
 
+    /**
+     * Built-in list combined with any remote signature updates.
+     * Recomputed on each call — the remote list is small (~tens of
+     * entries) and [SignatureRegistry.current] is a plain volatile
+     * read, so the overhead per scan is negligible.
+     */
+    private fun activePrefixes(): List<String> {
+        val remote = SignatureRegistry.current().classPrefixes
+        return if (remote.isEmpty()) BUILTIN_CLASS_PREFIXES
+        else BUILTIN_CLASS_PREFIXES + remote
+    }
+
     fun scan(context: Context, packageName: String): DexScanResult {
         val apkPath = try {
             context.packageManager.getApplicationInfo(packageName, 0).sourceDir
@@ -83,7 +95,7 @@ object HostileDexScanner {
                 val entries = dexFile.entries()
                 while (entries.hasMoreElements()) {
                     val className = entries.nextElement().replace('/', '.')
-                    for (prefix in HOSTILE_CLASS_PREFIXES) {
+                    for (prefix in activePrefixes()) {
                         if (className.startsWith(prefix)) {
                             matched.add(prefix)
                             break
@@ -120,14 +132,14 @@ object HostileDexScanner {
                     // ISO_8859_1 is a byte-safe decode — each byte maps to
                     // the same code-point, so ASCII substring search works.
                     val content = String(bytes, Charsets.ISO_8859_1)
-                    for (prefix in HOSTILE_CLASS_PREFIXES) {
+                    for (prefix in activePrefixes()) {
                         if (prefix in matched) continue
                         val needle = "L${prefix.replace('.', '/')}/"
                         if (content.contains(needle)) {
                             matched.add(prefix)
                         }
                     }
-                    if (matched.size == HOSTILE_CLASS_PREFIXES.size) break
+                    if (matched.size == activePrefixes().size) break
                 }
             }
             DexScanResult(

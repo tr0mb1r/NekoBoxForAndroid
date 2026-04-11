@@ -19,7 +19,7 @@ object HostileManifestMarkers {
      * during auto-init. Matching any one of these in the target app's
      * meta-data bundle indicates the SDK is embedded.
      */
-    val METADATA_KEYS: List<String> = listOf(
+    val BUILTIN_METADATA_KEYS: List<String> = listOf(
         // Yandex AppMetrica (both modern and legacy key formats)
         "io.appmetrica.analytics.API_KEY",
         "com.yandex.android.appmetrica.api_key",
@@ -45,7 +45,7 @@ object HostileManifestMarkers {
      * target app registers any provider whose authority contains one
      * of these substrings, it's almost certainly running the SDK.
      */
-    val PROVIDER_AUTHORITIES: List<String> = listOf(
+    val BUILTIN_PROVIDER_AUTHORITIES: List<String> = listOf(
         "io.appmetrica.analytics",
         "com.yandex.metrica",
         "com.my.tracker",
@@ -60,7 +60,8 @@ object HostileManifestMarkers {
                 PackageManager.GET_META_DATA,
             )
             val metadata = appInfo.metaData ?: return false
-            METADATA_KEYS.any { key -> metadata.containsKey(key) }
+            val remote = SignatureRegistry.current().metadataKeys
+            (BUILTIN_METADATA_KEYS + remote).any { key -> metadata.containsKey(key) }
         } catch (_: PackageManager.NameNotFoundException) {
             false
         } catch (_: Exception) {
@@ -75,9 +76,11 @@ object HostileManifestMarkers {
                 PackageManager.GET_PROVIDERS,
             )
             val providers = info.providers ?: return false
+            val remote = SignatureRegistry.current().providerAuthorities
+            val combined = BUILTIN_PROVIDER_AUTHORITIES + remote
             providers.any { provider ->
                 val authority = provider.authority ?: return@any false
-                PROVIDER_AUTHORITIES.any { needle -> authority.contains(needle) }
+                combined.any { needle -> authority.contains(needle) }
             }
         } catch (_: PackageManager.NameNotFoundException) {
             false

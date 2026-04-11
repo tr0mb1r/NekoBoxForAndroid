@@ -28,23 +28,22 @@ import java.security.MessageDigest
 object HostileCertificates {
 
     /**
-     * SHA-256 of signer certs, colon-separated uppercase hex
-     * ("A5:12:...:F7"). Populated at build time + merged with remote
-     * signature updates at runtime.
+     * Built-in SHA-256 of signer certs, colon-separated uppercase hex
+     * ("A5:12:...:F7"). Combined with [SignatureRegistry.current]
+     * remote fingerprints at check time.
+     *
+     * The built-in set starts empty — real Yandex/VK/Sber/Tinkoff
+     * hashes come via remote signature updates (the fork owner can
+     * push JSON to the `hostile-sigs` repo and clients pick it up
+     * on the next VPN start).
      */
-    val FINGERPRINTS: MutableSet<String> = mutableSetOf(
-        // TODO(#23): seed from the hostile-sigs repo on first release.
-        //
-        // Example format:
-        //   "A5:12:34:56:...:F7"  // Yandex LLC (apps signed under CN=Yandex LLC)
-        //   "B3:2F:8A:01:...:D4"  // VK (Mail.ru Group)
-        //   "C7:9E:4B:0C:...:12"  // Sberbank
-        //   "D1:6A:7F:22:...:88"  // Tinkoff
-    )
+    val BUILTIN_FINGERPRINTS: Set<String> = emptySet()
 
     @Suppress("DEPRECATION")
     fun check(pm: PackageManager, packageName: String): Boolean {
-        if (FINGERPRINTS.isEmpty()) return false
+        val remote = SignatureRegistry.current().certFingerprints
+        if (BUILTIN_FINGERPRINTS.isEmpty() && remote.isEmpty()) return false
+        val combined = BUILTIN_FINGERPRINTS + remote
 
         return try {
             val signatures = if (Build.VERSION.SDK_INT >= 28) {
@@ -65,7 +64,7 @@ object HostileCertificates {
             signatures.any { sig ->
                 val hash = md.digest(sig.toByteArray())
                 val hex = hash.joinToString(":") { "%02X".format(it) }
-                hex in FINGERPRINTS
+                hex in combined
             }
         } catch (_: PackageManager.NameNotFoundException) {
             false
