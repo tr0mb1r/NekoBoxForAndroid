@@ -88,6 +88,10 @@ class SagerNet : Application(),
 
                 updateNotificationChannels()
             }
+            // Schedule weekly DEX rescan (charging + idle + battery-not-low
+            // constraints, see HostileAppScanWorker). Enqueued with KEEP
+            // policy so repeated launches don't stack multiple workers.
+            io.nekohasekai.sagernet.scanner.HostileAppScanWorker.schedule(this)
         }
 
         if (BuildConfig.DEBUG) {

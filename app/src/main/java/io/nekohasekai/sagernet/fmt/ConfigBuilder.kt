@@ -7,6 +7,7 @@ import io.nekohasekai.sagernet.database.DataStore
 import io.nekohasekai.sagernet.database.ProxyEntity
 import io.nekohasekai.sagernet.database.ProxyEntity.Companion.TYPE_CONFIG
 import io.nekohasekai.sagernet.database.SagerDatabase
+import io.nekohasekai.sagernet.scanner.HostileScanSession
 import io.nekohasekai.sagernet.util.ProxyAuth
 import io.nekohasekai.sagernet.fmt.ConfigBuildResult.IndexEntity
 import io.nekohasekai.sagernet.fmt.hysteria.HysteriaBean
@@ -211,6 +212,12 @@ fun buildConfig(
                 domain_strategy = genDomainStrategy(DataStore.resolveDestination)
                 sniff = needSniff
                 sniff_override_destination = needSniffOverride
+                // Auto-exclude hostile apps detected by HostileAppScanner.
+                // Populated by HostileScanSession.refresh() in BoxInstance.init().
+                val scannerExcludes = HostileScanSession.excludeList()
+                if (scannerExcludes.isNotEmpty()) {
+                    exclude_package = (exclude_package.orEmpty() + scannerExcludes).distinct()
+                }
                 when (ipv6Mode) {
                     IPv6Mode.DISABLE -> {
                         inet4_address = listOf(VpnService.PRIVATE_VLAN4_CLIENT + "/28")

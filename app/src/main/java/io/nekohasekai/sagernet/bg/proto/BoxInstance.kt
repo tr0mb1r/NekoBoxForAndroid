@@ -18,6 +18,7 @@ import io.nekohasekai.sagernet.fmt.trojan_go.TrojanGoBean
 import io.nekohasekai.sagernet.fmt.trojan_go.buildTrojanGoConfig
 import io.nekohasekai.sagernet.ktx.*
 import io.nekohasekai.sagernet.plugin.PluginManager
+import io.nekohasekai.sagernet.scanner.HostileScanSession
 import io.nekohasekai.sagernet.util.ProxyAuth
 import kotlinx.coroutines.*
 import libcore.BoxInstance
@@ -54,6 +55,7 @@ abstract class BoxInstance(
     }
 
     open suspend fun init() {
+        HostileScanSession.refresh(SagerNet.application)
         buildConfig()
         for ((chain) in config.externalIndex) {
             chain.entries.forEachIndexed { index, (port, profile) ->
@@ -220,6 +222,7 @@ abstract class BoxInstance(
         }
 
         ProxyAuth.clear()
+        HostileScanSession.clear()
     }
 
 }

@@ -42,6 +42,10 @@
             android:id="@+id/nav_proxy_creds"
             android:icon="@drawable/ic_action_settings"
             android:title="Local Proxy Access" />
+        <item
+            android:id="@+id/nav_threat_scanner"
+            android:icon="@drawable/ic_baseline_bug_report_24"
+            android:title="Threat Scanner" />
     </group>
 
     <group
