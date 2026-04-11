@@ -18,3 +18,7 @@ jniLibs/
 
 # submodules
 /external
+
+# libcore/init.sh clones gomobile here during first build
+/libcore/gomobile
+/libcore/.build

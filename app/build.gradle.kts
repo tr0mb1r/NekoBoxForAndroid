@@ -1,5 +1,7 @@
 @file:Suppress("UnstableApiUsage")
 
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -12,6 +14,29 @@ setupApp()
 android {
     compileOptions {
         isCoreLibraryDesugaringEnabled = true
+    }
+    defaultConfig {
+        // Release variants never get test-loop credentials regardless of local.properties.
+        buildConfigField("String", "DEBUG_AUTOIMPORT_VLESS", "\"\"")
+        buildConfigField("boolean", "DEBUG_AUTOCONNECT_VPN", "false")
+    }
+    buildTypes {
+        getByName("debug") {
+            val lp = Properties().apply {
+                val f = rootProject.file("local.properties")
+                if (f.exists()) f.inputStream().use { load(it) }
+            }
+            buildConfigField(
+                "String",
+                "DEBUG_AUTOIMPORT_VLESS",
+                "\"${lp.getProperty("DEBUG_AUTOIMPORT_VLESS", "")}\""
+            )
+            buildConfigField(
+                "boolean",
+                "DEBUG_AUTOCONNECT_VPN",
+                (lp.getProperty("DEBUG_AUTOCONNECT_VPN", "false") == "true").toString()
+            )
+        }
     }
     ksp {
         arg("room.incremental", "true")

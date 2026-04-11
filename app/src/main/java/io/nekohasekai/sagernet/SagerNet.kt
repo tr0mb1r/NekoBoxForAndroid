@@ -101,6 +101,12 @@ class SagerNet : Application(),
                     .build()
             )
         }
+
+        if (BuildConfig.DEBUG && isMainProcess) {
+            runOnDefaultDispatcher {
+                io.nekohasekai.sagernet.util.DebugAutoImport.runIfEnabled(this@SagerNet)
+            }
+        }
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {

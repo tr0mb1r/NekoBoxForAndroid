@@ -8,7 +8,12 @@ else
   export SRC_ROOT=$(realpath .)
 fi
 
-DEPS=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin
+if [[ "$OSTYPE" =~ ^darwin ]]; then
+  NDK_HOST="darwin-x86_64"
+else
+  NDK_HOST="linux-x86_64"
+fi
+DEPS=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/$NDK_HOST/bin
 
 export ANDROID_ARM_CC=$DEPS/armv7a-linux-androideabi21-clang
 export ANDROID_ARM_CXX=$DEPS/armv7a-linux-androideabi21-clang++

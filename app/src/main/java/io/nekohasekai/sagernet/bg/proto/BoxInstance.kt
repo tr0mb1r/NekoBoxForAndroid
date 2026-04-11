@@ -18,6 +18,7 @@ import io.nekohasekai.sagernet.fmt.trojan_go.TrojanGoBean
 import io.nekohasekai.sagernet.fmt.trojan_go.buildTrojanGoConfig
 import io.nekohasekai.sagernet.ktx.*
 import io.nekohasekai.sagernet.plugin.PluginManager
+import io.nekohasekai.sagernet.util.ProxyAuth
 import kotlinx.coroutines.*
 import libcore.BoxInstance
 import libcore.Libcore
@@ -217,6 +218,8 @@ abstract class BoxInstance(
         if (::box.isInitialized) {
             box.close()
         }
+
+        ProxyAuth.clear()
     }
 
 }
