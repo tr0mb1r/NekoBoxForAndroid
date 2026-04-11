@@ -246,4 +246,13 @@
             app:key="showBottomBar"
             app:title="@string/show_bottom_bar" />
     </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/cag_hardening">
+        <EditTextPreference
+            app:icon="@drawable/ic_action_description"
+            app:key="hostileSigsUrl"
+            app:summary="@string/hostile_sigs_url_summary"
+            app:title="@string/hostile_sigs_url_title"
+            app:useSimpleSummaryProvider="false" />
+    </PreferenceCategory>
 </PreferenceScreen>

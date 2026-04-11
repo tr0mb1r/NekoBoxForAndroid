@@ -3,7 +3,7 @@ package io.nekohasekai.sagernet.scanner
 import android.content.Context
 import android.util.Log
 import com.google.gson.Gson
-import io.nekohasekai.sagernet.BuildConfig
+import io.nekohasekai.sagernet.database.DataStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.net.HttpURLConnection
@@ -54,9 +54,9 @@ object HostileSignatureUpdater {
      * otherwise (stale, empty URL, network error, parse error).
      */
     suspend fun fetchAndApply(context: Context): Boolean = withContext(Dispatchers.IO) {
-        val urlString = BuildConfig.HOSTILE_SIGS_URL
+        val urlString = DataStore.hostileSigsUrl.orEmpty().trim()
         if (urlString.isBlank()) {
-            Log.d(TAG, "HOSTILE_SIGS_URL is empty, skipping")
+            Log.d(TAG, "hostileSigsUrl is empty, skipping")
             return@withContext false
         }
 
