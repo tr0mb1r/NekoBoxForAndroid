@@ -22,3 +22,7 @@ jniLibs/
 # libcore/init.sh clones gomobile here during first build
 /libcore/gomobile
 /libcore/.build
+
+# hardening fork release keystore (generated per-installation, never committed)
+release.keystore
+release.keystore.upstream.bak
