@@ -56,8 +56,15 @@ object RawUpdater : GroupUpdater() {
                 ?: error(app.getString(R.string.no_proxies_found_in_subscription))
         } else {
 
+            // Phase 1+2 hardening regression fix: don't route subscription
+            // updates through the local SOCKS5 proxy. The mixed inbound is
+            // now bound to a random ephemeral port and requires 192-bit
+            // auth, so trySocks5(DataStore.mixedPort) silently fails and
+            // the request falls through to direct fetch — but if VPN is
+            // active, "direct" still means via tun0. For subscription
+            // fetches we want the host network so the user can pull a
+            // fresh server list even when no working profile exists yet.
             val response = Libcore.newHttpClient().apply {
-                trySocks5(DataStore.mixedPort)
                 tryH3Direct()
                 when (DataStore.appTLSVersion) {
                     "1.3" -> restrictedTLS()

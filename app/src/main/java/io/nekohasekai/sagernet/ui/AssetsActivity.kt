@@ -278,10 +278,16 @@ class AssetsActivity : ThemedActivity() {
         val ruleProvider = rulesProviders[DataStore.rulesProvider]
         val repo = ruleProvider.repoByFileName[fileName]
 
+        // Phase 1+2 hardening regression fix: don't route asset updates
+        // through the local SOCKS5 proxy. The mixed inbound is now bound
+        // to a random ephemeral port (ProxyAuth.allocatePort) and requires
+        // 192-bit auth, so trySocks5(DataStore.mixedPort) silently fails
+        // and the request falls through to direct fetch anyway. Just
+        // fetch directly from the start — asset updates are public
+        // GitHub-release metadata and don't need to be tunneled.
         val client = Libcore.newHttpClient().apply {
             modernTLS()
             keepAlive()
-            trySocks5(DataStore.mixedPort)
         }
 
         try {

@@ -214,9 +214,14 @@ class AboutFragment : ToolbarFragment(R.layout.layout_about) {
         fun checkUpdate(checkPreview: Boolean) {
             runOnIoDispatcher {
                 try {
+                    // Phase 1+2 hardening regression fix: see AssetsActivity.kt
+                    // for context. Don't try to route the upstream-version
+                    // check through the local SOCKS5 — it's now random-port
+                    // and auth-required. Direct fetch goes via tun0 if VPN
+                    // is up, wlan0 otherwise; both are fine for this metadata
+                    // GET.
                     val client = Libcore.newHttpClient().apply {
                         modernTLS()
-                        trySocks5(DataStore.mixedPort)
                     }
                     val response = client.newRequest().apply {
                         if (checkPreview) {
