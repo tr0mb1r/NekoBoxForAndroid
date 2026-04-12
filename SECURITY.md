@@ -2,7 +2,7 @@
 
 This document covers the security posture of the hardened NekoBox fork
 at `github.com/tr0mb1r/NekoBoxForAndroid` branch `hardening`, versioned
-as `1.4.2-hardening.1` and derived from upstream `MatsuriDayo/NekoBoxForAndroid@1.4.2`.
+as `1.4.2-hardening.3` and derived from upstream `MatsuriDayo/NekoBoxForAndroid@1.4.2`.
 
 For the full architectural discussion of what this fork does and why,
 read the top-level [`README.md`](../README.md). This file focuses on
@@ -146,8 +146,13 @@ so there is no escape hatch.
 
 `scanner/HostileSignatureUpdater.kt` fetches a JSON signature feed
 **over the VPN tunnel** after `box.start()` and merges it into
-`SignatureRegistry`. URL is configurable via
-`BuildConfig.HOSTILE_SIGS_URL` (empty by default → no-op).
+`SignatureRegistry`. The feed URL is configurable at runtime from
+**Settings → Hardening → "Hostile signature feed URL"** (stored in
+`DataStore.hostileSigsUrl`). The default is the public
+`https://raw.githubusercontent.com/tr0mb1r/hostile-sigs/main/signatures.json`
+feed, seeded from `BuildConfig.HOSTILE_SIGS_URL` on first access.
+Set it to empty to disable remote updates entirely (built-in
+signatures still apply).
 
 Expected JSON format:
 
@@ -155,7 +160,7 @@ Expected JSON format:
 {
   "version": 3,
   "package_prefixes": ["ru.new-thing.", "..."],
-  "cert_fingerprints": ["A5:12:...:F7"],
+  "cert_fingerprints": ["1684414033eb263e2c615f8b7df5ed8793850a07"],
   "metadata_keys": ["com.new-sdk.API_KEY"],
   "provider_authorities": ["com.new-sdk.provider"],
   "suspicious_permissions": [],
@@ -167,11 +172,14 @@ Versioning is strictly monotonic — `applyRemote` only accepts updates
 whose `version > current_version`. All errors silently fall back to
 built-in signatures. Body capped at 64 KB. Timeout 10 s.
 
+Cert fingerprints accept any hex format (uppercase/lowercase,
+with/without colons) — the client normalizes before matching.
+
 **Fork maintenance workflow**: when a new Russian SDK needs to be
-detected, publish a new `signatures.json` with bumped version to a
-public GitHub repo (e.g. `tr0mb1r/hostile-sigs`), and set
-`HOSTILE_SIGS_URL` in `local.properties` before the release build.
-Clients pick up the update on the next VPN start.
+detected, publish a new `signatures.json` with bumped version to the
+`tr0mb1r/hostile-sigs` repo. Clients pick up the update automatically
+on the next VPN start. Users can also point at their own feed URL
+via Settings → Hardening.
 
 ### Phase 6 — Proxy credentials UI
 
@@ -218,7 +226,7 @@ Key algo:          RSA 4096, SHA384withRSA
 Verify with:
 
 ```bash
-apksigner verify --print-certs NekoBox-1.4.2-hardening.1-arm64-v8a.apk
+apksigner verify --print-certs NekoBox-1.4.2-hardening.3-arm64-v8a.apk
 ```
 
 If the printed SHA-256 does not match `24a183cbbeea321b28043d0b...`
@@ -232,6 +240,9 @@ The hardening branch is publicly visible at
 chain of commits from the upstream tag `1.4.2`:
 
 ```
+b837ef4 hardening 1.4.2-hardening.3: runtime UI for hostile-sigs feed URL
+564153d hardening 1.4.2-hardening.2: fix trySocks5 regression + bundle geo assets
+447c4cb docs: add SECURITY.md
 1c30746 Phase 4 extensibility: remote signature update mechanism
 4bee6be Phase 4+5: hostile-app scanner with split-tunnel auto-exclude
 68e34a9 hardening: stop tracking release.keystore, add build cruft to .gitignore
@@ -295,6 +306,8 @@ being exploited in the wild, we will coordinate an earlier disclosure.
 
 | Version | Date | Commit | Notes |
 |---|---|---|---|
+| 1.4.2-hardening.3 | 2026-04-11 | `b837ef4` | Runtime UI for hostile-sigs feed URL, public default feed, cert format fix |
+| 1.4.2-hardening.2 | 2026-04-11 | `564153d` | Fix trySocks5 regression, bundle geo assets |
 | 1.4.2-hardening.1 | 2026-04-11 | `1c30746` | Phase 1-6 + extensibility, initial public release |
 
 ---

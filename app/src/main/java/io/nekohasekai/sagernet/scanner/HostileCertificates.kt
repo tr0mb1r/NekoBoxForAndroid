@@ -61,10 +61,16 @@ object HostileCertificates {
             }
 
             val md = MessageDigest.getInstance("SHA-256")
+            // Normalize the combined set to lowercase-no-colons so we
+            // match regardless of whether the feed uses "aa:bb" or
+            // "aabb" or "AA:BB" format.
+            val normalized = combined.mapTo(mutableSetOf()) {
+                it.replace(":", "").lowercase()
+            }
             signatures.any { sig ->
                 val hash = md.digest(sig.toByteArray())
-                val hex = hash.joinToString(":") { "%02X".format(it) }
-                hex in combined
+                val hex = hash.joinToString("") { "%02x".format(it) }
+                hex in normalized
             }
         } catch (_: PackageManager.NameNotFoundException) {
             false
