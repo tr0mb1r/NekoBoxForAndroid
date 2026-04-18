@@ -67,6 +67,9 @@
     <string name="ws_browser_forwarding_sum">Forward corresponding WebSockets through the browser.</string>
     <string name="speed_interval">Speed Notification Update Interval</string>
     <string name="cag_misc">Misc Settings</string>
+    <string name="cag_hardening">Hardening</string>
+    <string name="hostile_sigs_url_title">Hostile signature feed URL</string>
+    <string name="hostile_sigs_url_summary">JSON feed used by the hostile-app scanner. Leave empty to disable remote updates (built-in signatures still apply). Fetched over the VPN after connect.</string>
     <string name="show_stop">Show Stop Button</string>
     <string name="show_stop_sum">If you don’t want to use Quick Tile as the switch</string>
     <string name="show_direct_speed">Show Direct Speed</string>

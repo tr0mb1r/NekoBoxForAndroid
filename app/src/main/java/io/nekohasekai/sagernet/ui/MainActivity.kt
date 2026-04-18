@@ -340,6 +340,8 @@ class MainActivity : ThemedActivity(),
             R.id.nav_traffic -> displayFragment(WebviewFragment())
             R.id.nav_tools -> displayFragment(ToolsFragment())
             R.id.nav_logcat -> displayFragment(LogcatFragment())
+            R.id.nav_proxy_creds -> displayFragment(ProxyCredsFragment())
+            R.id.nav_threat_scanner -> displayFragment(ThreatScannerFragment())
             R.id.nav_faq -> {
                 launchCustomTab("https://matsuridayo.github.io/")
                 return false

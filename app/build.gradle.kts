@@ -1,5 +1,7 @@
 @file:Suppress("UnstableApiUsage")
 
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -12,6 +14,46 @@ setupApp()
 android {
     compileOptions {
         isCoreLibraryDesugaringEnabled = true
+    }
+    defaultConfig {
+        // Release variants never get test-loop credentials regardless of local.properties.
+        buildConfigField("String", "DEBUG_AUTOIMPORT_VLESS", "\"\"")
+        buildConfigField("boolean", "DEBUG_AUTOCONNECT_VPN", "false")
+        // URL for the remote hostile-signature JSON feed (Phase 4
+        // extensibility). Read from local.properties if present, else
+        // default to the public tr0mb1r/hostile-sigs feed. Fork
+        // maintainers running their own feed override via local.properties
+        // or CI env. Users who want to disable remote updates entirely
+        // can set HOSTILE_SIGS_URL= (empty) in local.properties.
+        val lpForSigs = Properties().apply {
+            val f = rootProject.file("local.properties")
+            if (f.exists()) f.inputStream().use { load(it) }
+        }
+        val defaultSigsUrl =
+            "https://raw.githubusercontent.com/tr0mb1r/hostile-sigs/main/signatures.json"
+        buildConfigField(
+            "String",
+            "HOSTILE_SIGS_URL",
+            "\"${lpForSigs.getProperty("HOSTILE_SIGS_URL", defaultSigsUrl)}\""
+        )
+    }
+    buildTypes {
+        getByName("debug") {
+            val lp = Properties().apply {
+                val f = rootProject.file("local.properties")
+                if (f.exists()) f.inputStream().use { load(it) }
+            }
+            buildConfigField(
+                "String",
+                "DEBUG_AUTOIMPORT_VLESS",
+                "\"${lp.getProperty("DEBUG_AUTOIMPORT_VLESS", "")}\""
+            )
+            buildConfigField(
+                "boolean",
+                "DEBUG_AUTOCONNECT_VPN",
+                (lp.getProperty("DEBUG_AUTOCONNECT_VPN", "false") == "true").toString()
+            )
+        }
     }
     ksp {
         arg("room.incremental", "true")

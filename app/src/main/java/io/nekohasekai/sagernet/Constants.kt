@@ -56,6 +56,10 @@ object Key {
     // Protocol Settings
     const val GLOBAL_ALLOW_INSECURE = "globalAllowInsecure"
 
+    // Hardening fork — hostile-signature feed URL. Empty string disables
+    // remote updates; built-in signatures still apply.
+    const val HOSTILE_SIGS_URL = "hostileSigsUrl"
+
     const val ACQUIRE_WAKE_LOCK = "acquireWakeLock"
     const val SHOW_BOTTOM_BAR = "showBottomBar"
 
